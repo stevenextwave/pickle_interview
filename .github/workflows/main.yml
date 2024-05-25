@@ -29,7 +29,7 @@ jobs:
 
       - name: Push Docker image to Amazon ECR
         run: |
-          echo "${{ secrets.AWS_SECRET_ACCESS_KEY }}" | docker login --username AWS --password-stdin aws_account_id.dkr.ecr.region.amazonaws.com
+          echo "${{ secrets.AWS_SECRET_ACCESS_KEY }}" | docker login --username AWS --password-stdin 851725519017.dkr.ecr.region.amazonaws.com
           docker push 851725519017.dkr.ecr.us-east-1.amazonaws.com/demo:latest
 
 
