@@ -40,6 +40,5 @@ jobs:
         run: |
           eksctl create cluster \
             --name my-eks-cluster \
-            --version 1.30 \
             --region us-east-1 \
             --fargate
