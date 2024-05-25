@@ -16,14 +16,11 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Switch to directory
-        run: cd api
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run Jest tests
-        run: npm test
+      - name: Build NPM package
+        run: | 
+            cd api
+            npm install
+            npm test
 
       - name: Build Docker image
         run: |
