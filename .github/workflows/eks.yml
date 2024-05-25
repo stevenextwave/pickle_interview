@@ -1,0 +1,45 @@
+name: Launch EKS Cluster with Fargate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-eks-cluster:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install awscli
+          aws --version
+
+      - name: Install eksctl
+        run: |
+          curl --location "https://github.com/weaveworks/eksctl/releases/download/v0.124.0/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
+          sudo mv /tmp/eksctl /usr/local/bin
+          eksctl version
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Create EKS Cluster with Fargate
+        run: |
+          eksctl create cluster \
+            --name my-eks-cluster \
+            --version 1.21 \
+            --region us-east-1 \
+            --fargate
