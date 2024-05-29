@@ -1,6 +1,7 @@
 const express = require('express');
 const AWS = require('aws-sdk');
 const sendEmail = require('./email');
+const writeToDynamoDB = require('./dynamodb')
 const app = express();
 
 // AWS configuration
@@ -11,17 +12,14 @@ AWS.config.update({
 const sqs = new AWS.SQS();
 const queueUrl = 'https://sqs.us-east-1.amazonaws.com/851725519017/receiver'; 
 
-// Middleware to parse JSON bodies
 app.use(express.json());
-
-
 
 // Recursive function to poll SQS queue for messages
 function pollQueue() {
   const receiveMessageParams = {
     QueueUrl: queueUrl,
-    MaxNumberOfMessages: 1, // Maximum number of messages to retrieve
-    WaitTimeSeconds: 20 // Long polling time (optional)
+    MaxNumberOfMessages: 1, 
+    WaitTimeSeconds: 20
   };
 
   sqs.receiveMessage(receiveMessageParams, (err, data) => {
@@ -29,6 +27,8 @@ function pollQueue() {
       console.error('Error receiving message:', err);
     } else if (data.Messages) {
       const message = data.Messages[0];
+      if ( message != undefined)
+      {
       const messageBody = JSON.parse(message.Body);
 
       console.log('Received message:', messageBody);
@@ -36,11 +36,18 @@ function pollQueue() {
 
             // Example usage:
       sendEmail(subject, to,text)
-        .then(success => {
-          if (success) {
+        .then(result => {
+          if (!result.error) {
             console.log('Email sent successfully');
+            writeToDynamoDB(result.data.messageId, new Date().toISOString(), messageBody, "OK").then(result=>{
+              if(result.error)
+              {
+                console.log('Fail to write to dynamodb');
+              }
+
+            })
           } else {
-            console.log('Failed to send email');
+            console.log(`Failed to send email ${result.message}`);
           }
         });
 
@@ -57,12 +64,12 @@ function pollQueue() {
           console.log('Message deleted successfully');
         }
       });
+    }
     } else {
       console.log('No messages available');
     }
 
-    // Poll the queue again after a short delay
-    setTimeout(pollQueue, 1000); // Adjust the delay as needed
+    setTimeout(pollQueue, 1000); 
   });
 }
 

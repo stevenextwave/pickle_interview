@@ -4,11 +4,13 @@
   "description": "the email API",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint ."
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "eslint": "^9.3.0",
     "express": "^4.19.2",
     "jest": "^29.7.0",
     "supertest": "^7.0.0"

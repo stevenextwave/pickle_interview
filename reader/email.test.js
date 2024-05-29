@@ -25,7 +25,7 @@ describe('sendEmail', () => {
 
     expect(sendMailMock).toHaveBeenCalledTimes(1);
     expect(sendMailMock).toHaveBeenCalledWith({
-      from: '@gmail.com',
+      from: 'stevenextwave@gmail.com',
       to,
       subject,
       text,
@@ -48,7 +48,7 @@ describe('sendEmail', () => {
 
     expect(sendMailMock).toHaveBeenCalledTimes(1);
     expect(sendMailMock).toHaveBeenCalledWith({
-      from: '@gmail.com',
+      from: 'stevenextwave@gmail.com',
       to,
       subject,
       text,

@@ -1,6 +1,10 @@
 const AWS = require('aws-sdk');
 
-// Initialize AWS DynamoDB
+// AWS configuration
+AWS.config.update({
+    region: 'us-east-1'
+  });
+
 const tableName = 'message'
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
@@ -16,12 +20,20 @@ async function writeToDynamoDB(messageId, timestamp, content, status) {
   };
 
   try {
-    const data = await dynamodb.put(params).promise();
-    console.log('Data written successfully:', data);
-    return data;
+    const ret = await dynamodb.put(params).promise();
+    console.log(`writing ${params} OK`);
+    return {
+        message: 'Operation was successful',
+        error : false,
+        data: ret
+      };
   } catch (err) {
-    console.error('Error writing data:', err);
-    return err;
+    console.log(`writing ${err} NOK`)
+    return {
+        message: `Fail to write data ${JSON.stringify(params)}`,
+        error : true,
+        data: err
+      };
   }
 }
 

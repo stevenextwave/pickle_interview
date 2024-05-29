@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 
 // Initialize AWS SQS
-const sqs = new AWS.SQS(); // Replace 'your-region' with your AWS region
+const sqs = new AWS.SQS({ region: 'us-east-1' }); // Replace 'your-region' with your AWS region
 
 /**
  * Function to send JSON data to an SQS queue.
