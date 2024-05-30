@@ -10,7 +10,8 @@ AWS.config.update({
 });
 
 const sqs = new AWS.SQS();
-const queueUrl = 'https://sqs.us-east-1.amazonaws.com/851725519017/receiver'; 
+const queueUrl = process.env.QUEUE;
+const port = process.env.PORT;
 
 app.use(express.json());
 
@@ -27,44 +28,41 @@ function pollQueue() {
       console.error('Error receiving message:', err);
     } else if (data.Messages) {
       const message = data.Messages[0];
-      if ( message != undefined)
-      {
-      const messageBody = JSON.parse(message.Body);
+      if ( message != undefined){
+        const messageBody = JSON.parse(message.Body);
+        console.log('Received message:', messageBody);
+        const { to, subject, text } = messageBody;
 
-      console.log('Received message:', messageBody);
-      const { to, subject, text } = messageBody;
+        sendEmail(subject, to,text)
+          .then(result => {
+            if (!result.error) {
+              console.log('Email sent successfully');
+              writeToDynamoDB(result.data.messageId, new Date().toISOString(), messageBody, "OK").then(result=>{
+                if(result.error)
+                {
+                  console.log('Fail to write to dynamodb');
+                }
 
-            // Example usage:
-      sendEmail(subject, to,text)
-        .then(result => {
-          if (!result.error) {
-            console.log('Email sent successfully');
-            writeToDynamoDB(result.data.messageId, new Date().toISOString(), messageBody, "OK").then(result=>{
-              if(result.error)
-              {
-                console.log('Fail to write to dynamodb');
-              }
+              })
+            } else {
+              console.log(`Failed to send email ${result.message}`);
+            }
+          });
 
-            })
+        // Delete the message from the queue
+        const deleteMessageParams = {
+          QueueUrl: queueUrl,
+          ReceiptHandle: message.ReceiptHandle
+        };
+
+        sqs.deleteMessage(deleteMessageParams, (err, data) => {
+          if (err) {
+            console.error('Error deleting message:', err);
           } else {
-            console.log(`Failed to send email ${result.message}`);
+            console.log('Message deleted successfully');
           }
         });
-
-      // Delete the message from the queue
-      const deleteMessageParams = {
-        QueueUrl: queueUrl,
-        ReceiptHandle: message.ReceiptHandle
-      };
-
-      sqs.deleteMessage(deleteMessageParams, (err, data) => {
-        if (err) {
-          console.error('Error deleting message:', err);
-        } else {
-          console.log('Message deleted successfully');
-        }
-      });
-    }
+      }
     } else {
       console.log('No messages available');
     }
@@ -76,11 +74,9 @@ function pollQueue() {
 // Start polling the queue
 pollQueue();
 
-// Start the server
-const PORT = process.env.PORT || 8089;
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
   });
 }
 

@@ -15,6 +15,7 @@ COPY . .
 
 # Expose the port your app runs on
 ENV PORT 8080
+ENV QUEUE https://sqs.us-east-1.amazonaws.com/851725519017/receiver
 EXPOSE 8080
 
 # Define the command to run your app

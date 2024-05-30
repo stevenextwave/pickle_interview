@@ -2,8 +2,8 @@ const AWS = require('aws-sdk');
 
 // Initialize AWS SQS
 AWS.config.update({
-    region: 'us-east-1'
-  });
+  region: 'us-east-1'
+});
 const sqs = new AWS.SQS(); // Replace 'your-region' with your AWS region
 
 /**
@@ -13,18 +13,18 @@ const sqs = new AWS.SQS(); // Replace 'your-region' with your AWS region
  * @returns {Promise<object>} A promise that resolves with the result of sending the message.
  */
 async function sendJsonToQueue(queueUrl, jsonData) {
-    const params = {
-        QueueUrl: queueUrl,
-        MessageBody: JSON.stringify(jsonData)
-    };
+  const params = {
+    QueueUrl: queueUrl,
+    MessageBody: JSON.stringify(jsonData)
+  };
 
-    try {
-        const result = await sqs.sendMessage(params).promise();;
-        return result;
-    } catch (error) {
-        console.error('Error sending message to SQS:', error);
-        throw error;
-    }
+  try {
+    const result = await sqs.sendMessage(params).promise();;
+    return result;
+  } catch (error) {
+    console.error('Error sending message to SQS:', error);
+    throw error;
+  }
 }
 
 module.exports = sendJsonToQueue;

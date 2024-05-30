@@ -5,24 +5,24 @@ const writeToDynamoDB = require('./dynamodb');
 
 // Mock the SQS service
 jest.mock('aws-sdk', () => {
-    const SQS = {
-        receiveMessage: jest.fn().mockReturnThis(),
-        deleteMessage: jest.fn().mockReturnThis(),
-        promise: jest.fn()
-    };
-    const putMock = jest.fn().mockReturnValue({ promise: jest.fn() });
-    const mockDocumentClient = {
-      put: putMock
-    };
-    return {
-        config: {
-            update: jest.fn()
-          },        
-        SQS: jest.fn(() => SQS),
-        DynamoDB: {
-            DocumentClient: jest.fn(() => mockDocumentClient)
-          }
-    };
+  const SQS = {
+    receiveMessage: jest.fn().mockReturnThis(),
+    deleteMessage: jest.fn().mockReturnThis(),
+    promise: jest.fn()
+  };
+  const putMock = jest.fn().mockReturnValue({ promise: jest.fn() });
+  const mockDocumentClient = {
+    put: putMock
+  };
+  return {
+    config: {
+      update: jest.fn()
+    },        
+    SQS: jest.fn(() => SQS),
+    DynamoDB: {
+      DocumentClient: jest.fn(() => mockDocumentClient)
+    }
+  };
 });
 jest.mock('./email');
 jest.mock('./dynamodb');

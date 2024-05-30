@@ -1,40 +1,26 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app-deployment
-  labels:
-    app: my-app
+  name: reader-deployment
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
-      app: my-app
+      app: reader
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
   template:
     metadata:
       labels:
-        app: my-app
+        app: reader
     spec:
       containers:
-      - name: api
-        image: api:latest
+      - name: reader-container
+        image: stevenextwave/reader:latest
         ports:
-        - containerPort: 80
-        # Add environment variables if needed
-        env:
-        - name: ENVIRONMENT_VARIABLE_1
-          value: "value1"
-        - name: ENVIRONMENT_VARIABLE_2
-          value: "value2"
-        # Add volume mounts if needed
-        volumeMounts:
-        - name: data-volume
-          mountPath: /data
-      # Add additional containers if needed
-      # - name: another-container
-      #   image: another-docker-image:latest
-      #   ports:
-      #   - containerPort: 8080
-      # Add volumes if needed
-      volumes:
-      - name: data-volume
-        emptyDir: {}
+        - containerPort: 8084
+

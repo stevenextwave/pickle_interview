@@ -14,7 +14,10 @@ RUN npm install
 COPY . .
 
 # Expose the port your app runs on
-EXPOSE 4000
+ENV PORT 8089
+ENV QUEUE https://sqs.us-east-1.amazonaws.com/851725519017/receiver
+ENV TABLE message
+EXPOSE 8089
 
 # Define the command to run your app
 CMD ["node", "index.js"]
