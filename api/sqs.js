@@ -19,7 +19,7 @@ async function sendJsonToQueue(queueUrl, jsonData) {
     };
 
     try {
-        const result = await sqs.sendMessage(params);
+        const result = await sqs.sendMessage(params).promise();;
         return result;
     } catch (error) {
         console.error('Error sending message to SQS:', error);

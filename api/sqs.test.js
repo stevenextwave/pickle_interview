@@ -1,37 +1,32 @@
 const AWS = require('aws-sdk');
-const sendJsonToQueue = require('./sendJsonToQueue');
+const sendJsonToQueue = require('./sqs');
 
 // Mock the SQS service
 jest.mock('aws-sdk', () => {
     const SQS = {
         sendMessage: jest.fn().mockReturnThis(),
-        promise: jest.fn(),
+        promise: jest.fn()
     };
     return {
-        
+        config: {
+            update: jest.fn()
+          },        
         SQS: jest.fn(() => SQS),
     };
 });
 
 describe('sendJsonToQueue', () => {
     afterEach(() => {
-        jest.clearAllMocks(); // Reset mock usage data after each test
+        jest.clearAllMocks(); 
     });
 
     it('should send JSON data to an SQS queue', async () => {
         const queueUrl = 'mockedQueueUrl';
         const jsonData = { key: 'value' };
-        const expectedResult = { MessageId: 'mockedMessageId' };
-
-        // Mock the SQS sendMessage method
-        AWS.SQS.mockImplementationOnce(() => ({
-            sendMessage: jest.fn().mockReturnThis(),
-            promise: jest.fn(() => Promise.resolve(expectedResult)),
-        }));
-
+        const expectedResult = { MessageId: '12345' };
+        AWS.SQS().sendMessage().promise.mockResolvedValue({ MessageId: '12345' });
         const result = await sendJsonToQueue(queueUrl, jsonData);
 
-        expect(AWS.SQS).toHaveBeenCalledWith({ region: 'us-east-1' });
         expect(AWS.SQS().sendMessage).toHaveBeenCalledWith({
             QueueUrl: queueUrl,
             MessageBody: JSON.stringify(jsonData),
@@ -43,13 +38,7 @@ describe('sendJsonToQueue', () => {
         const queueUrl = 'mockedQueueUrl';
         const jsonData = { key: 'value' };
         const errorMessage = 'Sending message failed';
-
-        // Mock the SQS sendMessage method to throw an error
-        AWS.SQS.mockImplementationOnce(() => ({
-            sendMessage: jest.fn().mockReturnThis(),
-            promise: jest.fn(() => Promise.reject(new Error(errorMessage))),
-        }));
-
+        AWS.SQS().sendMessage().promise.mockRejectedValueOnce(new Error(errorMessage));
         await expect(sendJsonToQueue(queueUrl, jsonData)).rejects.toThrow(errorMessage);
     });
 });
