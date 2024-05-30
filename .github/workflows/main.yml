@@ -16,20 +16,42 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Build NPM package
+      - name: Build API package
         run: | 
             cd api
             npm install
             npm test
 
-      - name: Build Docker image
-        run: |
-          docker build -t api api/ 
-          docker tag api:latest 851725519017.dkr.ecr.us-east-1.amazonaws.com/demo:latest
+      - name: Build Reader package
+        run: | 
+            cd reader
+            npm install
+            npm test
 
-      - name: Push Docker image to Amazon ECR
-        run: |
-          echo "${{ secrets.AWS_SECRET_ACCESS_KEY }}" | docker login --username AWS --password-stdin 851725519017.dkr.ecr.us-east-1.amazonaws.com
-          docker push 851725519017.dkr.ecr.us-east-1.amazonaws.com/demo:latest
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push API Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./api
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/api:latest
+
+      - name: Build and push API Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./reader
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/reader:latest
+
+      - name: Logout from Docker Hub
+        run: docker logout
 
 

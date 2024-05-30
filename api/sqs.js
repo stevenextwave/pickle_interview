@@ -1,7 +1,10 @@
 const AWS = require('aws-sdk');
 
 // Initialize AWS SQS
-const sqs = new AWS.SQS({ region: 'us-east-1' }); // Replace 'your-region' with your AWS region
+AWS.config.update({
+    region: 'us-east-1'
+  });
+const sqs = new AWS.SQS(); // Replace 'your-region' with your AWS region
 
 /**
  * Function to send JSON data to an SQS queue.
@@ -16,7 +19,7 @@ async function sendJsonToQueue(queueUrl, jsonData) {
     };
 
     try {
-        const result = await sqs.sendMessage(params).promise();
+        const result = await sqs.sendMessage(params);
         return result;
     } catch (error) {
         console.error('Error sending message to SQS:', error);

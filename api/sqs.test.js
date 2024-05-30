@@ -1,52 +1,55 @@
 const AWS = require('aws-sdk');
-const sendJsonToQueue = require('./sqs');
+const sendJsonToQueue = require('./sendJsonToQueue');
 
+// Mock the SQS service
 jest.mock('aws-sdk', () => {
-  const mockedSendMessage = jest.fn().mockReturnThis();
-  const mockedPromise = jest.fn();
-
-  return {
-    SQS: jest.fn(() => ({
-      sendMessage: mockedSendMessage,
-    })),
-  };
+    const SQS = {
+        sendMessage: jest.fn().mockReturnThis(),
+        promise: jest.fn(),
+    };
+    return {
+        
+        SQS: jest.fn(() => SQS),
+    };
 });
 
 describe('sendJsonToQueue', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should send JSON data to SQS successfully', async () => {
-    const queueUrl = 'https://sqs.us-east-1.amazonaws.com/123456789012/queue-name';
-    const jsonData = { key: 'value' };
-    const expectedResult = { MessageId: 'message-id' };
-
-    AWS.SQS().sendMessage().promise.mockResolvedValueOnce(expectedResult);
-
-    const result = await sendJsonToQueue(queueUrl, jsonData);
-
-    expect(AWS.SQS).toHaveBeenCalledWith({ region: 'us-east-1' });
-    expect(AWS.SQS().sendMessage).toHaveBeenCalledWith({
-      QueueUrl: queueUrl,
-      MessageBody: JSON.stringify(jsonData),
+    afterEach(() => {
+        jest.clearAllMocks(); // Reset mock usage data after each test
     });
-    expect(result).toEqual(expectedResult);
-  });
 
-  it('should handle errors when sending JSON data to SQS', async () => {
-    const queueUrl = 'https://sqs.us-east-1.amazonaws.com/123456789012/queue-name';
-    const jsonData = { key: 'value' };
-    const expectedError = new Error('Test error');
+    it('should send JSON data to an SQS queue', async () => {
+        const queueUrl = 'mockedQueueUrl';
+        const jsonData = { key: 'value' };
+        const expectedResult = { MessageId: 'mockedMessageId' };
 
-    AWS.SQS().sendMessage().promise.mockRejectedValueOnce(expectedError);
+        // Mock the SQS sendMessage method
+        AWS.SQS.mockImplementationOnce(() => ({
+            sendMessage: jest.fn().mockReturnThis(),
+            promise: jest.fn(() => Promise.resolve(expectedResult)),
+        }));
 
-    await expect(sendJsonToQueue(queueUrl, jsonData)).rejects.toThrow(expectedError);
+        const result = await sendJsonToQueue(queueUrl, jsonData);
 
-    expect(AWS.SQS).toHaveBeenCalledWith({ region: 'us-east-1' });
-    expect(AWS.SQS().sendMessage).toHaveBeenCalledWith({
-      QueueUrl: queueUrl,
-      MessageBody: JSON.stringify(jsonData),
+        expect(AWS.SQS).toHaveBeenCalledWith({ region: 'us-east-1' });
+        expect(AWS.SQS().sendMessage).toHaveBeenCalledWith({
+            QueueUrl: queueUrl,
+            MessageBody: JSON.stringify(jsonData),
+        });
+        expect(result).toEqual(expectedResult);
     });
-  });
+
+    it('should throw an error if sending message to SQS fails', async () => {
+        const queueUrl = 'mockedQueueUrl';
+        const jsonData = { key: 'value' };
+        const errorMessage = 'Sending message failed';
+
+        // Mock the SQS sendMessage method to throw an error
+        AWS.SQS.mockImplementationOnce(() => ({
+            sendMessage: jest.fn().mockReturnThis(),
+            promise: jest.fn(() => Promise.reject(new Error(errorMessage))),
+        }));
+
+        await expect(sendJsonToQueue(queueUrl, jsonData)).rejects.toThrow(errorMessage);
+    });
 });
