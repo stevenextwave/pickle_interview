@@ -10,7 +10,7 @@ AWS.config.update({
 });
 
 const sqs = new AWS.SQS();
-const queueUrl = process.env.QUEUE;
+const queueUrl = process.env.QUEUE || 'https://sqs.us-east-1.amazonaws.com/851725519017/receiver';
 const port = process.env.PORT;
 
 app.use(express.json());

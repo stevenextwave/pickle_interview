@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sendJsonToQueue = require('./sqs');
 
-const queueUrl = process.env.QUEUE;
+const queueUrl = process.env.QUEUE || 'https://sqs.us-east-1.amazonaws.com/851725519017/receiver';
 const port = process.env.PORT;
 const app = express();
 
